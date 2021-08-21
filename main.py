@@ -13,3 +13,5 @@ if __name__ == '__main__':
         except:
             print("Exception! Reached num ", i)
 
+    WorksRetrival.clean_directory("./authors")
+

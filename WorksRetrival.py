@@ -1,8 +1,11 @@
+import shutil
+
 import requests
 from bs4 import BeautifulSoup
 from time import sleep
 import pandas as pd
 from pathlib import Path
+import os
 
 
 def get_work(work_number: int):
@@ -93,3 +96,48 @@ def get_work(work_number: int):
             "./authors/" + author + "/" + title + ".csv", encoding="utf-8-sig")
 
 
+def clean_directory(dir_path):
+    min_num_files_keep = 10
+    dirs = os.listdir(dir_path)
+    all_files_paths = []
+    for author_dir in dirs:
+        author_path = dir_path + "/" + author_dir
+        contents = os.listdir(author_path)
+        file_paths = []
+        if len(contents) == 0:
+            os.rmdir(author_path)
+        else:
+            num_files = 0
+            for content in contents:
+                content_path = author_path + "/" + content
+                if os.path.isfile(content_path):
+                    if Path(content_path).stat().st_size < 10:
+                        # File size <= 0KB
+                        os.remove(content_path)
+                    else:
+                        num_files += 1
+                        file_paths.append(content_path)
+                else:
+                    files = os.listdir(content_path)
+                    for file_name in files:
+                        file_path = content_path + "/" + file_name
+                        if os.path.isfile(file_path):
+                            if Path(file_path).stat().st_size < 10:
+                                # File size <= 0KB
+                                os.remove(file_path)
+                            else:
+                                num_files += 1
+                                file_paths.append(file_path)
+                        else:
+                            # Directory was created instead of file -
+                            # Something went wrong, this should not exist
+                            shutil.rmtree(file_path)
+            if num_files < min_num_files_keep:
+                # We collected too few samples of this author - do not need
+                shutil.rmtree(author_path)
+            else:
+                all_files_paths.extend(file_paths)
+
+    df_data = {'Files': all_files_paths}
+    df = pd.DataFrame.from_dict(df_data)
+    df.to_csv("./all_files.csv", encoding="utf-8-sig")

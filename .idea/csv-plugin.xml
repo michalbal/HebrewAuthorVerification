@@ -3,6 +3,13 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
+        <entry key="\authors\אברהם אורי קובנר\אולת שׂמחה לחסר לב.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\authors\אחד העם\חצי-נחמה.csv">
           <value>
             <Attribute>
@@ -10,7 +17,35 @@
             </Attribute>
           </value>
         </entry>
-        <entry key="\authors\יוסף יואל ריבלין\ר' יעקב חגיז.csv">
+        <entry key="\authors\ברל כצנלסון\אחדוּת העבוֹדה.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\חגי אשד\איפה אנחנו ואיפה אנגליה.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\חגי אשד\הנצחון הישראלי במלחמת יום הכיפורים.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\יוסף אהרונוביץ\בחינוך.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\יוסף אהרונוביץ\היכל התרבות העברית.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
