@@ -3,7 +3,35 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
-        <entry key="\authors\אברהם אורי קובנר\אולת שׂמחה לחסר לב.csv">
+        <entry key="\all_files.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\אברהם לוינסון\חיים ארלוזורוב.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\אברהם לוינסון\יצחק שיפר.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\אברהם לוינסון\עם ישראל, המדינה העברית, והגולה.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\אהרן ראובני\בעבועים.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -18,6 +46,27 @@
           </value>
         </entry>
         <entry key="\authors\ברל כצנלסון\אחדוּת העבוֹדה.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דוד פרישמן\אהבה.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דוד פרישמן\אמנות.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דוד פרישמן\שתי שערות.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -46,6 +95,13 @@
           </value>
         </entry>
         <entry key="\authors\יוסף אהרונוביץ\היכל התרבות העברית.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors_unwanted\ק. א. ברתיני\שירת פיכמן.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
