@@ -22,6 +22,7 @@ def call_yap(text):
 
 
 def parse_dep_tree(dep_tree):
+    print("Parsing dep tree")
     words = []
     pos_tags = []
     suf_and_gen_info = []
@@ -35,10 +36,6 @@ def parse_dep_tree(dep_tree):
 
 def segment_and_tag_sentence(text):
     # text = text.replace(r'"', r'\"')
-    # tokenized_text = HebTokenizer().tokenize(text)
-    # tokenized_text = ' '.join([word for (part, word) in tokenized_text])
-    # print("Tokens: {}".format(len(tokenized_text.split())))
-    # print("Calling yap on text: ", text, "\n Turned into tokenized text: \n", tokenized_text)
     json = call_yap(text)
     # print("json is:\n", json)
     tokenized_text = json['tokenized_text']

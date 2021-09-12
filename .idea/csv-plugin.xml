@@ -52,6 +52,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\authors\דוד פרישמן\אגרת למשה הלמאן.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\authors\דוד פרישמן\אהבה.csv">
           <value>
             <Attribute>
@@ -60,6 +67,62 @@
           </value>
         </entry>
         <entry key="\authors\דוד פרישמן\אמנות.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דוד פרישמן\בהר סיני.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דוד פרישמן\בחירות.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דוד פרישמן\הֶרְצְל הַפֵילֵיטוֹנִיסְטָן.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דוד פרישמן\הַגָּדוֹת אַנְדֶּרְסֶן.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דוד פרישמן\הַמַּלְאָך הַקָּטָן.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דוד פרישמן\הסופרז'יסטות בלונדון.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דוד פרישמן\מְשִׁיחַ הַסִּפְרוּת.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דוד פרישמן\שמחה.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

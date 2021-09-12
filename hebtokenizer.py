@@ -136,7 +136,7 @@ if __name__=='__main__':
       #print u"\n".join(["%s %s" % (which,tok) for which,tok in tokenize(sent) if which not in FILTER]).encode("utf8")
    sent="שלום לכם מלאכים קטנים. האם QUEEN היא הלהקה הטובה לשנת 1978?"
    print(sent)
-   #print (' '.join([tok for (which,tok) in tokenize(sent)]).encode(opts.out_enc))
+   print (' '.join([tok for (which,tok) in tokenize(sent)]).encode(opts.out_enc))
 
    ht=HebTokenizer()
    parts=ht.tokenize(sent)

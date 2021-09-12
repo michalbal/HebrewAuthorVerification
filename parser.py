@@ -5,12 +5,17 @@ import regex as re
 import numpy as np
 from itertools import product
 
-import enums
-import yap_api
 import yap_caller
 from hebtokenizer import HebTokenizer
 
 punctuations = '!"#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n'
+
+POS_TAGS = {'ABVERB','AT', 'BN', 'BNN', 'CC', 'CD', 'CDT', 'CONJ', 'COP',
+            'COP_TOINFINITIVE', 'DEF', 'DT', 'DTT', 'DUMMY_AT', 'EX', 'IN',
+            'INTJ', 'JJ', 'JJT', 'MD', 'NN', 'NN_S_PP', 'NNP', 'NNT', 'P',
+            'POS', 'PREPOSITION', 'PRP', 'QW', 'S_PRN', 'TEMP', 'VB',
+            'VB_TOINFINITIVE'}
+# TODO consider adding the punctuations here as well
 
 function_words_for_segmented_text =\
     ['ה', 'ו', 'ש', 'כש', 'ל', 'את', 'מתי', 'מתישהו', 'למשל',
@@ -35,9 +40,8 @@ class Parser:
 
     def __init__(self, pos_window_size: int):
         self.window_size = pos_window_size
-        self.pos_tags = enums.PennTags.__members__
         self.pos_combos = {}
-        for index, pos_combo in enumerate(product(self.pos_tags, repeat=self.window_size)):
+        for index, pos_combo in enumerate(product(POS_TAGS, repeat=self.window_size)):
             # TODO verify what the type of the combo is, and if it matches the
             #  pos tag combinations we get from the feature function
             self.pos_combos[pos_combo] = index
@@ -47,19 +51,19 @@ class Parser:
         # punctuations_regex = "(!|\"|#|$|%|&|\(|\)|\*|\+|,|-|\.|\/|:|;|<|=|>|\?|@|\[|\]|\^|_|`|{|}|~|\t|\n|&nbsp;)+"
         # seperated_punctuations = re.sub(punctuations_regex, ' ', text)
         seperated_punctuations = text
-        print("text is: ", text)
+        # print("text is: ", text)
         for punct in string.punctuation:
             seperated_punctuations = seperated_punctuations.replace(punct,
                                                                     ' ' + punct + ' ')
-
-        print("after seperating punctuations the text is: ")
-        print(seperated_punctuations)
-        splitted = seperated_punctuations.split()
-        print(splitted)
-        splitted.reverse()
-        cleaned_text = " ".join(splitted)
-        print("Cleaned text is: ")
-        print(cleaned_text)
+        cleaned_text = " ".join(seperated_punctuations.split())
+        # print("after seperating punctuations the text is: ")
+        # print(seperated_punctuations)
+        # splitted = seperated_punctuations.split()
+        # print(splitted)
+        # splitted.reverse()
+        # cleaned_text = " ".join(splitted)
+        # print("Cleaned text is: ")
+        # print(cleaned_text)
         return cleaned_text
 
     # YAPAPI clean text
@@ -67,7 +71,9 @@ class Parser:
         text=text.replace('\n', ' ').replace('\r', ' ')
         pattern= re.compile(r'[^א-ת\s.,!?a-zA-Z]')
         alnum_text =pattern.sub(' ', text)
+        print("Cleaning the text")
         while(alnum_text.find('  ')>-1):
+            print("In cleaning while loop")
             alnum_text=alnum_text.replace('  ', ' ')
         return alnum_text
 
@@ -81,11 +87,13 @@ class Parser:
         sentences=[]
         # Finding next sentence break.
         while (True):
-            stop_points=[h for h in [i for i, e in enumerate(arr) if re.match(r"[!|.|?]",e)] ]
+            print("In split to sentences while loop")
+            stop_points=[h for h in [i for i, e in enumerate(arr) if re.match(r"[!|.|?|;]",e)] ]
             if len(stop_points)>0:
                 stop_point=min(stop_points)
                 # Keep several sentence breaker as 1 word, like "...." or "???!!!"
                 while True:
+                    print("In split sentence inner while loop - True")
                     stop_points.remove(stop_point)
                     if len(stop_points)>1 and min(stop_points)==(stop_point+1):
                         stop_point=stop_point+1
@@ -95,6 +103,7 @@ class Parser:
                 sntnc=arr[:stop_point+1]
                 if len(sntnc) >max_len:
                     while(len(sntnc) >max_len):
+                        print("In split sentence inner while loop")
                         sentences.append(" ".join(sntnc[:140]))
                         sntnc=sntnc[140:]
                     sentences.append(" ".join(sntnc))
@@ -109,6 +118,7 @@ class Parser:
         return sentences
 
     def count_punctuations(self, text: str):
+        print("Counting punctuations")
         # Could've used python count, didnt want to because this is more efficient
         words = text.split()
         num_words = len(words)
@@ -126,6 +136,7 @@ class Parser:
 
 
     def count_function_words(self, text):
+        print("Counting function words")
         # TODO maybe use different way to split into words, maybe mutual one between the functions
         num_of_words = len(function_words)
         features = np.zeros(num_of_words)
@@ -139,31 +150,33 @@ class Parser:
         return features
 
     def create_pos_tag_features(self, text):
+        print("Creating pos tag combos")
         pos_combo_features = np.zeros(len(self.pos_combos))
-        text = text.replace(r'"', r'\"')
-        alnum_text = self.clean_text(text)
-        tokenized_text = HebTokenizer().tokenize(alnum_text)
-        tokenized_text = ' '.join([word for (part, word) in tokenized_text])
-        print("Tokens: {}".format(len(tokenized_text.split())))
-        sentences = self.split_text_to_sentences(tokenized_text)
+        sentences = self.split_text_to_sentences(text)
         # sentences = text.split('.')  # TODO maybe use splitting of yap_api
         for sentence in sentences:
-            tokenized_text, words, pos_tags, suf_and_gen_info = yap_caller.segment_and_tag_sentence(
-                sentence)
+            try:
+                tokenized_text, words, pos_tags, suf_and_gen_info = yap_caller.segment_and_tag_sentence(
+                    sentence)
 
-            start_pos_combo = 0
-            end_pos_combo = start_pos_combo + self.window_size
-            while end_pos_combo < len(pos_tags):
-                combo = []
-                for i in range(self.window_size):
-                    combo.append(pos_tags[i])
-
-                pos_tuple = tuple(combo)
-                if pos_tuple in self.pos_combos:
-                    pos_combo_index = self.pos_combos[pos_tuple]
-                    pos_combo_features[pos_combo_index] += 1
-                start_pos_combo += 1
+                start_pos_combo = 0
                 end_pos_combo = start_pos_combo + self.window_size
+                while end_pos_combo < len(pos_tags):
+                    print("In creating combos while..")
+                    combo = []
+                    for i in range(self.window_size):
+                        combo.append(pos_tags[i + start_pos_combo])
+
+                    pos_tuple = tuple(combo)
+                    if pos_tuple in self.pos_combos:
+                        print("Combo ", pos_tuple, " In combos dict")
+                        pos_combo_index = self.pos_combos[pos_tuple]
+                        pos_combo_features[pos_combo_index] += 1
+                    start_pos_combo += 1
+                    end_pos_combo = start_pos_combo + self.window_size
+            except:
+                print("Exception for sentence ", sentence)
+                continue
 
         # TODO need to decide by what to normalize here -
         #  num of sent? num of words?
@@ -172,21 +185,32 @@ class Parser:
 
     def create_document_feature_vector(self, document_text):
 
+        # text = document_text.replace(r'"', r'\"')
+        text = self.clean_text_and_reverse_order(document_text)
+
+        # tokenized_text = HebTokenizer().tokenize(document_text)
+        # tokenized_text = ' '.join([word for (part, word) in tokenized_text])
+        # print("Tokens: {}".format(len(tokenized_text.split())))
+        # print("after tokenization text is: ", tokenized_text)
+        # text = tokenized_text
+        print("Cleaned text is: \n", text)
+
+
         # TODO maybe clean and split sentence here
-        punctuation_features = self.count_punctuations(document_text)
-        word_features = self.count_function_words(document_text)
-        pos_features = self.create_pos_tag_features(document_text)
+        punctuation_features = self.count_punctuations(text)
+        word_features = self.count_function_words(text)
+        pos_features = self.create_pos_tag_features(text)
 
         print("punctuation feature vector is: ", punctuation_features)
         print("word feature vector is: ", word_features)
         print("pos feature vector is: ", pos_features)
         print("POS feature vector len is: ", len(pos_features))
 
-        return pd.concat([punctuation_features, word_features, pos_features])
+        return np.concatenate([punctuation_features, word_features, pos_features])
 
 
 if __name__ == '__main__':
-    attempt = pd.read_csv("authors/דוד פרישמן/אהבה.csv")
+    attempt = pd.read_csv("authors/דוד פרישמן/בחירות.csv")
     text = attempt["Text"][0]
     print("text is ", text)
     parser = Parser(2)
