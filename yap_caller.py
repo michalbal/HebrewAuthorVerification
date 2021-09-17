@@ -42,10 +42,10 @@ def segment_and_tag_sentence(text):
     segmented_text = json['segmented_text']
     lemmas = json['lemmas']
     dep_tree = json['dep_tree']
-    print("tokenized_text: \n", tokenized_text, "\n segmented_text:\n",
-          segmented_text, "\nlemmas:\n", lemmas)
+    # print("tokenized_text: \n", tokenized_text, "\n segmented_text:\n",
+    #       segmented_text, "\nlemmas:\n", lemmas)
     words, pos_tags, suf_and_gen_info = parse_dep_tree(dep_tree)
-    print("words are: ", words, " \npos tags are ", pos_tags)
+    # print("words are: ", words, " \npos tags are ", pos_tags)
     return tokenized_text, words, pos_tags, suf_and_gen_info
 
 

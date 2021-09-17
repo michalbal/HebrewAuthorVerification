@@ -213,6 +213,27 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\document_pos_tags\.אביגדור המאירי\הוֹד מַלְכוּתָהּ בּוֹכָה.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\document_pos_tags\.אסתר ראב\תחת האוקליפטוס בחילואן.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\document_pos_tags\דן אלמגור\אגוז שמן ושמו אלן שרמן.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
       </map>
     </option>
   </component>

@@ -7,6 +7,10 @@ import pandas as pd
 from pathlib import Path
 import os
 import random
+import embedder
+import yap_caller
+
+SAMPLE_LENGTH = 10
 
 
 def get_work(work_number: int):
@@ -144,25 +148,100 @@ def clean_directory(dir_path):
     df.to_csv("./all_files.csv", encoding="utf-8-sig")
 
 
+
+
+
+def retrieve_work_as_sentences_and_pos_tags(text: str, work_name: str):
+    path_to_pos_tags = "./document_pos_tags" + '/' + work_name
+    print("path to pos tags is: ", path_to_pos_tags)
+    if os.path.isfile(path_to_pos_tags):
+        return pd.read_csv(path_to_pos_tags)
+
+    # Get pos tags for text and save in DF
+    sentences = embedder.split_text_to_sentences(text)
+    pos_tags_df = pd.DataFrame()
+    for sentence in sentences:
+        try:
+            tokenized_text, words, pos_tags, suf_and_gen_info = yap_caller.segment_and_tag_sentence(
+                sentence)
+            sentence_dict = {'Sentence': sentence, "POS_Tags": pos_tags}
+            pos_tags_df = pos_tags_df.append(sentence_dict, ignore_index=True)
+        except:
+            print("Exception for sentence ", sentence)
+            continue
+
+    path = Path(path_to_pos_tags)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    pos_tags_df.to_csv(path_to_pos_tags, encoding="utf-8-sig")
+    return pos_tags_df
+
+
+def create_sample(sub_df: pd.DataFrame, label):
+    text = "".join(sub_df['Sentence'])
+    return {'Text': text, 'POS_Tags': sub_df['POS_Tags'], 'Label': label}
+
+
+def create_sub_samples_df(pos_tags_df: pd.DataFrame, label: int):
+    start = 0
+    end = start + SAMPLE_LENGTH
+    num_of_sentences = pos_tags_df.shape[0]
+    # print("Shape of pos_tags_df is ", pos_tags_df.shape, " which is why um of sentences is: ", num_of_sentences)
+    samples_df = pd.DataFrame()
+    while end < num_of_sentences:
+        # print("Creating sub sample, Not reached end yet, start is ", start)
+        samples_df = samples_df.append(
+            create_sample(pos_tags_df.iloc[start: end], label),
+            ignore_index=True)
+        start = end
+        end = start + SAMPLE_LENGTH
+
+    samples_df = samples_df.append(
+        create_sample(pos_tags_df.iloc[start: num_of_sentences], label),
+        ignore_index=True)
+    return samples_df
+
+
 def retrieve_samples_for_author(path_to_author_dir: str, author_name: str):
     positive_samples = pd.DataFrame()
     author_dir_content = os.listdir(path_to_author_dir)
+    # author_dir_content = ['אגוז שמן ושמו אלן שרמן.csv']
     num_of_samples = 0
     for content in author_dir_content:
         content_path = path_to_author_dir + "/" + content
         if os.path.isfile(content_path):
             text = pd.read_csv(content_path)["Text"][0]
-            sample_dict = {'Text': text, 'Label': 1}
-            positive_samples = positive_samples.append(sample_dict, ignore_index=True)
-            num_of_samples += 1
+
+            pos_tags_df = retrieve_work_as_sentences_and_pos_tags(text, author_name + "/" + content)
+            sub_samples_df = create_sub_samples_df(pos_tags_df, 1)
+
+            # sample_dict = {'Text': text, 'Label': 1}
+            # positive_samples = positive_samples.append(sample_dict, ignore_index=True)
+
+            num_of_samples += sub_samples_df.shape[0]
+            # print("Shape of sub_samples_df is ", sub_samples_df.shape,
+            #       " which is why new num of samples is: ", num_of_samples)
+
+            positive_samples = pd.concat([positive_samples, sub_samples_df], ignore_index=True,
+                      axis=0)
         else:
             # Directory with translator files
             files = os.listdir(content_path)
             for file in files:
                 text = pd.read_csv(content_path + "/" + file)["Text"][0]
-                sample_dict = {'Text': text, 'Label': 1}
-                positive_samples = positive_samples.append(sample_dict, ignore_index=True)
-                num_of_samples += 1
+
+                pos_tags_df = retrieve_work_as_sentences_and_pos_tags(text, author_name + "/" + content + "/" + file)
+                sub_samples_df = create_sub_samples_df(pos_tags_df, 1)
+                # sample_dict = {'Text': text, 'Label': 1}
+                # positive_samples = positive_samples.append(sample_dict, ignore_index=True)
+                # num_of_samples += 1
+                num_of_samples += sub_samples_df.shape[0]
+                # print("Shape of sub_samples_df is ", sub_samples_df.shape,
+                #       " which is why new num of samples is: ", num_of_samples)
+
+                positive_samples = pd.concat(
+                    [positive_samples, sub_samples_df], ignore_index=True,
+                    axis=0)
 
     negative_samples = get_different_author_samples_of_size(author_name, num_of_samples)
     return pd.concat([positive_samples, negative_samples], ignore_index=True, axis=0)
@@ -172,7 +251,8 @@ def get_different_author_samples_of_size(author: str, size: int):
     files = pd.read_csv("./all_files.csv", encoding="utf-8-sig")['Files']
     samples_df = pd.DataFrame()
     files_chosen = set()
-    for i in range(size):
+    sample_count = 0
+    while sample_count < size:
         random_file_path = random.choice(files)
         while author in random_file_path or random_file_path in files_chosen:
             if author in random_file_path:
@@ -183,6 +263,18 @@ def get_different_author_samples_of_size(author: str, size: int):
             random_file_path = random.choice(files)
         files_chosen.add(random_file_path)
         text = pd.read_csv(random_file_path)["Text"][0]
-        sample_dict = {'Text': text, 'Label': 0}
-        samples_df = samples_df.append(sample_dict, ignore_index = True)
+
+        # sample_dict = {'Text': text, 'Label': 0}
+        # samples_df = samples_df.append(sample_dict, ignore_index = True)
+
+        path = random_file_path.replace("/authors/", "")
+        pos_tags_df = retrieve_work_as_sentences_and_pos_tags(text, path)
+
+        sub_samples_df = create_sub_samples_df(pos_tags_df, 0)
+        samples_df = pd.concat(
+            [samples_df, sub_samples_df], ignore_index=True,
+            axis=0)
+        sample_count += sub_samples_df.shape[1]
+    if samples_df.shape[0] > size:
+        samples_df = samples_df.iloc[0: size + 1]
     return samples_df
