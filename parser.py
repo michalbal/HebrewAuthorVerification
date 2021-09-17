@@ -1,3 +1,4 @@
+import os
 import string
 
 import pandas as pd
@@ -5,8 +6,24 @@ import regex as re
 import numpy as np
 from itertools import product
 
+import WorksRetrival
 import yap_caller
 from hebtokenizer import HebTokenizer
+
+import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, confusion_matrix, \
+    roc_curve, roc_auc_score, classification_report
+from sklearn.linear_model import LogisticRegression,SGDClassifier
+from sklearn.model_selection import train_test_split
+import pickle
+
+from sklearn.ensemble import RandomForestClassifier
+# clf = RandomForestClassifier().fit(X_train_tf, train_df.label)
+from sklearn.linear_model import LogisticRegression
+# clf=LogisticRegression().fit(X_train_tf, train_df.label)
+
+
+
 
 punctuations = '!"#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n'
 
@@ -33,7 +50,9 @@ function_words = ['ה', 'ו', 'ש', 'כש', 'ל', 'את', 'מתי', 'מתישה�
                   'גם', 'אשר', 'לא', 'אין', 'אחר', 'אחרי', 'של', 'אני', 'על',
                   'זה', 'פי', 'כן', 'כאשר', 'איה', 'הגיע', 'בא', 'לכן', 'כי',
                   'בגלל', 'היית', 'עד', 'כאן', 'בי', 'בתוכי', 'מפני', 'האם',
-                  'כך', 'זהו', 'היו', 'היה', 'אבל', '', '']
+                  'כך', 'זהו', 'היו', 'היה', 'אבל', 'עם', 'כל', 'הוא', 'היא',
+                  'הם', 'אם', 'מה', 'אבל', 'אתכם', 'אותם', 'אותן', 'איתי', 'איתו',
+                  'אתכן', 'עמו', 'עמהן', 'עמהם', 'זאת', 'זו', 'היכן']
 
 
 class Parser:
@@ -204,14 +223,52 @@ class Parser:
         print("punctuation feature vector is: ", punctuation_features)
         print("word feature vector is: ", word_features)
         print("pos feature vector is: ", pos_features)
-        print("POS feature vector len is: ", len(pos_features))
 
         return np.concatenate([punctuation_features, word_features, pos_features])
 
+        # return np.concatenate([punctuation_features, word_features])
+
+
+
+def create_svm_model_and_split_data(samples_df, author_name):
+    encodings = [parser.create_document_feature_vector(text) for text in samples_df['Text']]
+    X_train, X_test, y_train, y_test = train_test_split(
+        encodings, samples_df['Label'], test_size=0.2, random_state=42)
+
+    svm_model_path = ".\models\\" + author_name + "_svm_model.pkl"
+    if not os.path.exists(svm_model_path):
+        svm_model = SGDClassifier()
+        svm_model.fit(X_train, y_train)
+        save_model(svm_model, svm_model_path)
+    else:
+        svm_model = load_model(svm_model_path)
+    show_model_success_on_dataset(svm_model, svm_model_path, X_test, y_test, author_name)
+    return  svm_model, X_train, X_test, y_train, y_test
+
+
+def save_model(model, path):
+    with open(path, "wb") as file:
+        pickle.dump(model, file)
+
+
+def load_model(path):
+    with open(path, "rb") as file:
+        return pickle.load(file)
+
+
+def show_model_success_on_dataset(model, model_name, x_test, y_test, author_name):
+    y_predicted = model.predict(x_test)
+    print(model_name, " accuracy: ",
+          accuracy_score(y_predicted, y_test), " of author ", author_name)
+    print(classification_report(y_test, y_predicted))
+
 
 if __name__ == '__main__':
-    attempt = pd.read_csv("authors/דוד פרישמן/בחירות.csv")
-    text = attempt["Text"][0]
-    print("text is ", text)
+    # attempt = pd.read_csv("authors/דוד פרישמן/בחירות.csv")
+    # text = attempt["Text"][0]
+    # print("text is ", text)
     parser = Parser(2)
-    features_vector = parser.create_document_feature_vector(text)
+    # features_vector = parser.create_document_feature_vector(text)
+    samples_df = WorksRetrival.retrieve_samples_for_author("authors/דן אלמגור", "דן אלמגור")
+
+    svm_model, X_train, X_test, y_train, y_test = create_svm_model_and_split_data(samples_df, "דן אלמגור")

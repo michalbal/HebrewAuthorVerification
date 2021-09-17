@@ -38,7 +38,28 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\authors\אחד העם\בנין.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\אחד העם\הכהנים והעם.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\authors\אחד העם\חצי-נחמה.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\אפרים דינרד\חסידים וחסידות.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />
@@ -130,6 +151,27 @@
           </value>
         </entry>
         <entry key="\authors\דוד פרישמן\שתי שערות.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דן אלמגור\אם לא – אז אני צוללת!.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\דן אלמגור\ברל'ה, ברל'ה, צא החוצה!.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\הנס כריסטיאן אנדרסן\דוד פרישמן\נָכוֹן הַדָּבָר כִּנְכוֹן הַיוֹם.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

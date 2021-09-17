@@ -6,6 +6,7 @@ from time import sleep
 import pandas as pd
 from pathlib import Path
 import os
+import random
 
 
 def get_work(work_number: int):
@@ -141,3 +142,47 @@ def clean_directory(dir_path):
     df_data = {'Files': all_files_paths}
     df = pd.DataFrame.from_dict(df_data)
     df.to_csv("./all_files.csv", encoding="utf-8-sig")
+
+
+def retrieve_samples_for_author(path_to_author_dir: str, author_name: str):
+    positive_samples = pd.DataFrame()
+    author_dir_content = os.listdir(path_to_author_dir)
+    num_of_samples = 0
+    for content in author_dir_content:
+        content_path = path_to_author_dir + "/" + content
+        if os.path.isfile(content_path):
+            text = pd.read_csv(content_path)["Text"][0]
+            sample_dict = {'Text': text, 'Label': 1}
+            positive_samples = positive_samples.append(sample_dict, ignore_index=True)
+            num_of_samples += 1
+        else:
+            # Directory with translator files
+            files = os.listdir(content_path)
+            for file in files:
+                text = pd.read_csv(content_path + "/" + file)["Text"][0]
+                sample_dict = {'Text': text, 'Label': 1}
+                positive_samples = positive_samples.append(sample_dict, ignore_index=True)
+                num_of_samples += 1
+
+    negative_samples = get_different_author_samples_of_size(author_name, num_of_samples)
+    return pd.concat([positive_samples, negative_samples], ignore_index=True, axis=0)
+
+
+def get_different_author_samples_of_size(author: str, size: int):
+    files = pd.read_csv("./all_files.csv", encoding="utf-8-sig")['Files']
+    samples_df = pd.DataFrame()
+    files_chosen = set()
+    for i in range(size):
+        random_file_path = random.choice(files)
+        while author in random_file_path or random_file_path in files_chosen:
+            if author in random_file_path:
+                print("randomly selected filepath ", random_file_path,
+                      " It is a sample of the same author: ", author)
+            else:
+                print("File ", random_file_path, " was already selected")
+            random_file_path = random.choice(files)
+        files_chosen.add(random_file_path)
+        text = pd.read_csv(random_file_path)["Text"][0]
+        sample_dict = {'Text': text, 'Label': 0}
+        samples_df = samples_df.append(sample_dict, ignore_index = True)
+    return samples_df
