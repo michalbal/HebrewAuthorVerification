@@ -32,7 +32,6 @@ def get_work(work_number: int):
     type_info : str = breadcrumbs[0].text
 
     if type_info.find("שירה") != -1 or type_info.find("מחזות") != -1 or type_info.find("משלים") != -1:
-        # Perhaps we'll want to reconsider משלים
         return
 
     title_info = soup.findAll(class_="headline-1-v02 work-name-top")
@@ -148,12 +147,8 @@ def clean_directory(dir_path):
     df.to_csv("./all_files.csv", encoding="utf-8-sig")
 
 
-
-
-
 def retrieve_work_as_sentences_and_pos_tags(text: str, work_name: str):
-    path_to_pos_tags = "./document_pos_tags" + '/' + work_name
-    print("path to pos tags is: ", path_to_pos_tags)
+    path_to_pos_tags = "document_pos_tags" + '/' + work_name
     if os.path.isfile(path_to_pos_tags):
         return pd.read_csv(path_to_pos_tags)
 
@@ -162,18 +157,20 @@ def retrieve_work_as_sentences_and_pos_tags(text: str, work_name: str):
     pos_tags_df = pd.DataFrame()
     for sentence in sentences:
         try:
-            tokenized_text, words, pos_tags, suf_and_gen_info = yap_caller.segment_and_tag_sentence(
-                sentence)
+            # tokenized_text, words, pos_tags, suf_and_gen_info = yap_caller.segment_and_tag_sentence(
+            #     sentence)
+            pos_tags = []
             sentence_dict = {'Sentence': sentence, "POS_Tags": pos_tags}
             pos_tags_df = pos_tags_df.append(sentence_dict, ignore_index=True)
         except:
             print("Exception for sentence ", sentence)
             continue
 
-    path = Path(path_to_pos_tags)
-    path.parent.mkdir(parents=True, exist_ok=True)
-
-    pos_tags_df.to_csv(path_to_pos_tags, encoding="utf-8-sig")
+    # Was used to generate pos tag files so we won't have to send again each run
+    # path = Path(path_to_pos_tags)
+    # path.parent.mkdir(parents=True, exist_ok=True)
+    #
+    # pos_tags_df.to_csv(path_to_pos_tags, encoding="utf-8-sig")
     return pos_tags_df
 
 
@@ -186,26 +183,24 @@ def create_sub_samples_df(pos_tags_df: pd.DataFrame, label: int):
     start = 0
     end = start + SAMPLE_LENGTH
     num_of_sentences = pos_tags_df.shape[0]
-    # print("Shape of pos_tags_df is ", pos_tags_df.shape, " which is why um of sentences is: ", num_of_sentences)
     samples_df = pd.DataFrame()
     while end < num_of_sentences:
-        # print("Creating sub sample, Not reached end yet, start is ", start)
         samples_df = samples_df.append(
             create_sample(pos_tags_df.iloc[start: end], label),
             ignore_index=True)
         start = end
         end = start + SAMPLE_LENGTH
-
-    samples_df = samples_df.append(
-        create_sample(pos_tags_df.iloc[start: num_of_sentences], label),
-        ignore_index=True)
+    if end > num_of_sentences and start < num_of_sentences:
+        samples_df = samples_df.append(create_sample(
+            pos_tags_df.iloc[start: num_of_sentences], label),
+            ignore_index=True)
     return samples_df
 
 
 def retrieve_samples_for_author(path_to_author_dir: str, author_name: str):
     positive_samples = pd.DataFrame()
     author_dir_content = os.listdir(path_to_author_dir)
-    # author_dir_content = ['אגוז שמן ושמו אלן שרמן.csv']
+    print("Author ", author_name," Number of direct files/directories: ", len(author_dir_content))
     num_of_samples = 0
     for content in author_dir_content:
         content_path = path_to_author_dir + "/" + content
@@ -215,12 +210,7 @@ def retrieve_samples_for_author(path_to_author_dir: str, author_name: str):
             pos_tags_df = retrieve_work_as_sentences_and_pos_tags(text, author_name + "/" + content)
             sub_samples_df = create_sub_samples_df(pos_tags_df, 1)
 
-            # sample_dict = {'Text': text, 'Label': 1}
-            # positive_samples = positive_samples.append(sample_dict, ignore_index=True)
-
             num_of_samples += sub_samples_df.shape[0]
-            # print("Shape of sub_samples_df is ", sub_samples_df.shape,
-            #       " which is why new num of samples is: ", num_of_samples)
 
             positive_samples = pd.concat([positive_samples, sub_samples_df], ignore_index=True,
                       axis=0)
@@ -232,17 +222,13 @@ def retrieve_samples_for_author(path_to_author_dir: str, author_name: str):
 
                 pos_tags_df = retrieve_work_as_sentences_and_pos_tags(text, author_name + "/" + content + "/" + file)
                 sub_samples_df = create_sub_samples_df(pos_tags_df, 1)
-                # sample_dict = {'Text': text, 'Label': 1}
-                # positive_samples = positive_samples.append(sample_dict, ignore_index=True)
-                # num_of_samples += 1
                 num_of_samples += sub_samples_df.shape[0]
-                # print("Shape of sub_samples_df is ", sub_samples_df.shape,
-                #       " which is why new num of samples is: ", num_of_samples)
 
                 positive_samples = pd.concat(
                     [positive_samples, sub_samples_df], ignore_index=True,
                     axis=0)
 
+    print("Num of samples created: ", num_of_samples)
     negative_samples = get_different_author_samples_of_size(author_name, num_of_samples)
     return pd.concat([positive_samples, negative_samples], ignore_index=True, axis=0)
 
@@ -264,10 +250,7 @@ def get_different_author_samples_of_size(author: str, size: int):
         files_chosen.add(random_file_path)
         text = pd.read_csv(random_file_path)["Text"][0]
 
-        # sample_dict = {'Text': text, 'Label': 0}
-        # samples_df = samples_df.append(sample_dict, ignore_index = True)
-
-        path = random_file_path.replace("/authors/", "")
+        path = random_file_path.replace("authors/", "")
         pos_tags_df = retrieve_work_as_sentences_and_pos_tags(text, path)
 
         sub_samples_df = create_sub_samples_df(pos_tags_df, 0)

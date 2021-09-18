@@ -10,6 +10,13 @@
             </Attribute>
           </value>
         </entry>
+        <entry key="\authors\אביגדור המאירי\הוֹד מַלְכוּתָהּ בּוֹכָה.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\authors\אברהם לוינסון\חיים ארלוזורוב.csv">
           <value>
             <Attribute>
@@ -200,6 +207,41 @@
           </value>
         </entry>
         <entry key="\authors\יוסף אהרונוביץ\היכל התרבות העברית.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\יוסף חיים ברנר\בְּחַיֵּינוּ וּבְעִתּוֹנוּתֵנוּ (דבר בעתו ובמקומו וכו').csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\יוסף חיים ברנר\בְּחַיֵּינוּ וּבְעִתּוֹנוּתֵנוּ (על עתונות ויהודים).csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\יוסף חיים ברנר\בִּיבְּלִיוֹגְרַפִיָה (״מעברות״).csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors\פרץ סמולנסקין\הרימו מכשול!.csv">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\authors_unwanted\אביגדור המאירי\הוֹד מַלְכוּתָהּ בּוֹכָה.csv">
           <value>
             <Attribute>
               <option name="separator" value="," />

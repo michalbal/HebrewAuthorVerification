@@ -15,18 +15,6 @@ POS_TAGS = {'ABVERB','AT', 'BN', 'BNN', 'CC', 'CD', 'CDT', 'CONJ', 'COP',
             'INTJ', 'JJ', 'JJT', 'MD', 'NN', 'NN_S_PP', 'NNP', 'NNT', 'P',
             'POS', 'PREPOSITION', 'PRP', 'QW', 'S_PRN', 'TEMP', 'VB',
             'VB_TOINFINITIVE'}
-# TODO consider adding the punctuations here as well
-
-function_words_for_segmented_text =\
-    ['ה', 'ו', 'ש', 'כש', 'ל', 'את', 'מתי', 'מתישהו', 'למשל',
-                  'גם', 'אשר', 'לא', 'אין', 'אחר', 'אחרי', 'של', 'אני', 'על',
-                  'זה', 'פי', 'כן', 'כאשר', 'איה', 'הגיע', 'בא', 'לכן', 'כי',
-                  'בגלל', 'היית', 'עד', 'כאן', 'בי', 'בתוכי', 'מפני', 'האם',
-                  'כך', 'זהו', 'היו', 'היה', 'אבל', '', '']
-
-# TODO: For now we send the text not segmented with ב ב and the likes.
-#  We hopefully get that from the pos tags, if we don't, we will send the
-#  segmented, but notice that we miss words like עליי
 
 
 function_words = ['ה', 'ו', 'ש', 'כש', 'ל', 'את', 'מתי', 'מתישהו', 'למשל',
@@ -35,8 +23,14 @@ function_words = ['ה', 'ו', 'ש', 'כש', 'ל', 'את', 'מתי', 'מתישה�
                   'בגלל', 'היית', 'עד', 'כאן', 'בי', 'בתוכי', 'מפני', 'האם',
                   'כך', 'זהו', 'היו', 'היה', 'אבל', 'עם', 'כל', 'הוא', 'היא',
                   'הם', 'אם', 'מה', 'אבל', 'אתכם', 'אותם', 'אותן', 'איתי', 'איתו',
-                  'אתכן', 'עמו', 'עמהן', 'עמהם', 'זאת', 'זו', 'היכן']
-
+                  'אתכן', 'עמו', 'עמהן', 'עמהם', 'זאת', 'זו', 'היכן', 'איפה',
+                  'שכמותך', 'שכמוך', 'תהיה', 'חסל', 'חדל', 'צריך', 'צריכה',
+                  'אמלא', 'אילו', 'ואילו', 'שהיה', 'שיהיה', 'חוץ', 'מזה',
+                  'בפי', 'בלי', 'ללא', 'מבלי', 'אגב', 'בין', 'כה', 'אף', 'תם',
+                  'נשלם', 'נגמר', 'הסתיים', 'כבר', 'איננו', 'איננה', 'אומרת',
+                  'אומר', 'כשהוא', 'כשהיא', 'כשהם', 'פן', 'ההוא', 'ההיא', 'ההם',
+                  'יהיו', 'יהיה', 'יהי', 'שבין', 'לבין', 'רז', 'רזי', 'רזים', 'אלה']
+# TODO add charachter bigrams/ trigrams?
 
 class Embedder:
 
@@ -44,84 +38,10 @@ class Embedder:
         self.window_size = pos_window_size
         self.pos_combos = {}
         for index, pos_combo in enumerate(product(POS_TAGS, repeat=self.window_size)):
-            # TODO verify what the type of the combo is, and if it matches the
-            #  pos tag combinations we get from the feature function
             self.pos_combos[pos_combo] = index
-            # print("Pos combo is: ", pos_combo, " of index ", index)
-
-    def clean_text_and_reverse_order(self, text: str):
-        # punctuations_regex = "(!|\"|#|$|%|&|\(|\)|\*|\+|,|-|\.|\/|:|;|<|=|>|\?|@|\[|\]|\^|_|`|{|}|~|\t|\n|&nbsp;)+"
-        # seperated_punctuations = re.sub(punctuations_regex, ' ', text)
-        seperated_punctuations = text
-        # print("text is: ", text)
-        for punct in string.punctuation:
-            seperated_punctuations = seperated_punctuations.replace(punct,
-                                                                    ' ' + punct + ' ')
-        cleaned_text = " ".join(seperated_punctuations.split())
-        # print("after seperating punctuations the text is: ")
-        # print(seperated_punctuations)
-        # splitted = seperated_punctuations.split()
-        # print(splitted)
-        # splitted.reverse()
-        # cleaned_text = " ".join(splitted)
-        # print("Cleaned text is: ")
-        # print(cleaned_text)
-        return cleaned_text
-
-    # YAPAPI clean text
-    def clean_text(self, text:str):
-        text=text.replace('\n', ' ').replace('\r', ' ')
-        pattern= re.compile(r'[^א-ת\s.,!?a-zA-Z]')
-        alnum_text =pattern.sub(' ', text)
-        print("Cleaning the text")
-        while(alnum_text.find('  ')>-1):
-            print("In cleaning while loop")
-            alnum_text=alnum_text.replace('  ', ' ')
-        return alnum_text
-
-    def split_text_to_sentences(self, tokenized_text):
-        """
-        YAP better perform on sentence-by-sentence.
-        Also, dep_tree is limited to 256 nodes.
-        """
-        max_len=150
-        arr=tokenized_text.strip().split()
-        sentences=[]
-        # Finding next sentence break.
-        while (True):
-            # print("In split to sentences while loop")
-            stop_points=[h for h in [i for i, e in enumerate(arr) if re.match(r"[!|.|?|;]",e)] ]
-            if len(stop_points)>0:
-                stop_point=min(stop_points)
-                # Keep several sentence breaker as 1 word, like "...." or "???!!!"
-                while True:
-                    # print("In split sentence inner while loop - True")
-                    stop_points.remove(stop_point)
-                    if len(stop_points)>1 and min(stop_points)==(stop_point+1):
-                        stop_point=stop_point+1
-                    else:
-                        break
-                # Case there is no sentence break, and this split > MAX LEN:
-                sntnc=arr[:stop_point+1]
-                if len(sntnc) >max_len:
-                    while(len(sntnc) >max_len):
-                        # print("In split sentence inner while loop")
-                        sentences.append(" ".join(sntnc[:140]))
-                        sntnc=sntnc[140:]
-                    sentences.append(" ".join(sntnc))
-                # Normal: sentence is less then 150 words...
-                else:
-                    sentences.append(" ".join(arr[:stop_point+1] ))
-                arr=arr[stop_point+1:]
-            else:
-                break
-        if len(arr)>0:
-            sentences.append(" ".join(arr))
-        return sentences
 
     def count_punctuations(self, text: str):
-        print("Counting punctuations")
-        # Could've used python count, didnt want to because this is more efficient
+        # print("Counting punctuations")
         words = text.split()
         num_words = len(words)
         punctuation_features = np.zeros(len(string.punctuation))
@@ -136,10 +56,8 @@ class Embedder:
         punctuation_features = punctuation_features / num_words.__float__()
         return punctuation_features
 
-
     def count_function_words(self, text):
-        print("Counting function words")
-        # TODO maybe use different way to split into words, maybe mutual one between the functions
+        # print("Counting function words")
         num_of_words = len(function_words)
         features = np.zeros(num_of_words)
         words = text.split()
@@ -154,118 +72,62 @@ class Embedder:
     def create_pos_tag_features(self, pos_tags_text):
         print("Creating pos tag combos")
         pos_combo_features = np.zeros(len(self.pos_combos))
-        # sentences = self.split_text_to_sentences(text)
-        # sentences = text.split('.')
         for sentence_pos in pos_tags_text:
 
             start_pos_combo = 0
             end_pos_combo = start_pos_combo + self.window_size
             while end_pos_combo < len(sentence_pos):
-                # print("In creating combos while..")
                 combo = []
                 for i in range(self.window_size):
                     combo.append(sentence_pos[i + start_pos_combo])
 
                 pos_tuple = tuple(combo)
                 if pos_tuple in self.pos_combos:
-                    # print("Combo ", pos_tuple, " In combos dict")
                     pos_combo_index = self.pos_combos[pos_tuple]
                     pos_combo_features[pos_combo_index] += 1
                 start_pos_combo += 1
                 end_pos_combo = start_pos_combo + self.window_size
 
-        # TODO need to decide by what to normalize here -
-        #  num of sent? num of words?
         pos_combo_features = pos_combo_features / len(pos_tags_text)
         return pos_combo_features
 
     def create_document_feature_vector(self, line):
+        text = line['Text']
 
-        # text = document_text.replace(r'"', r'\"')
-        document_text = line['Text']
-        text = self.clean_text_and_reverse_order(document_text)
-
-        # tokenized_text = HebTokenizer().tokenize(document_text)
-        # tokenized_text = ' '.join([word for (part, word) in tokenized_text])
-        # print("Tokens: {}".format(len(tokenized_text.split())))
-        # print("after tokenization text is: ", tokenized_text)
-        # text = tokenized_text
-        # print("Cleaned text is: \n", text)
-
-
-        # TODO maybe clean and split sentence here
         punctuation_features = self.count_punctuations(text)
         word_features = self.count_function_words(text)
 
-        pos_tags = line['POS_Tags']
-        pos_features = self.create_pos_tag_features(pos_tags)
+        # Was used for pos tag features, but they take too ling
+        # pos_tags = line['POS_Tags']
+        # pos_features = self.create_pos_tag_features(pos_tags)
+        # return np.concatenate([punctuation_features, word_features, pos_features])
 
-        # print("punctuation feature vector is: ", punctuation_features)
-        # print("word feature vector is: ", word_features)
-        # print("pos feature vector is: ", pos_features)
+        return np.concatenate([punctuation_features, word_features])
 
-        return np.concatenate([punctuation_features, word_features, pos_features])
 
-        # return np.concatenate([punctuation_features, word_features])
+def clean_text(text):
+    cleaned = text.replace("\xa0", '')
+    cleaned = cleaned.replace("\xad", '')
+    for punct in string.punctuation:
+        cleaned = cleaned.replace(punct, ' ' + punct + ' ')
+    cleaned = " ".join(cleaned.split())
+    return cleaned
 
 
 def split_text_to_sentences(text: str):
-    # sentences = []
-    # # print("text is: ", text)
-    # paragraphs = re.split('[\n|\r|\t]+', text)
-    # print("After splitting to paragraphs text is: ", paragraphs)
-    # for parag in paragraphs:
-    #     if len(parag) > 2:
-    #         sentences = parag.split('.')
-    #         if len(sentences) <= 1:
-    #             sentences.append(parag)
-    #         else:
-    #             for sentence in sentences:
-    #                 if len(sentence) > 2:
-    #                     sentence = sentence + '.'
-    #                     sentences.append(sentence)
-    # print("Sentences are: \n", sentences)
-    # return sentences
-    max_len = 150
-    seperated_punctuations = text
-    for punct in string.punctuation:
-        seperated_punctuations = seperated_punctuations.replace(punct,
-                                                                ' ' + punct + ' ')
-    cleaned_text = " ".join(seperated_punctuations.split())
-    arr = cleaned_text.strip().split()
     sentences = []
-    # Finding next sentence break.
-    while (True):
-        # print("In split to sentences while loop")
-        stop_points = [h for h in [i for i, e in enumerate(arr) if
-                                   re.match(r"[!|.|?|;]", e)]]
-        if len(stop_points) > 0:
-            stop_point = min(stop_points)
-            # Keep several sentence breaker as 1 word, like "...." or "???!!!"
-            while True:
-                # print("In split sentence inner while loop - True")
-                stop_points.remove(stop_point)
-                if len(stop_points) > 1 and min(stop_points) == (
-                        stop_point + 1):
-                    stop_point = stop_point + 1
-                else:
-                    break
-            # Case there is no sentence break, and this split > MAX LEN:
-            sntnc = arr[:stop_point + 1]
-            if len(sntnc) > max_len:
-                while (len(sntnc) > max_len):
-                    # print("In split sentence inner while loop")
-                    sentences.append(" ".join(sntnc[:140]))
-                    sntnc = sntnc[140:]
-                sentences.append(" ".join(sntnc))
-            # Normal: sentence is less then 150 words...
+    cleaned_text = clean_text(text)
+    paragraphs = re.split('[\n|\r|\t]+', cleaned_text)
+    for parag in paragraphs:
+        if len(parag) > 2:
+            parag_splitted = parag.split('.')
+            if len(sentences) <= 1:
+                sentences.append(parag)
             else:
-                sentences.append(" ".join(arr[:stop_point + 1]))
-            arr = arr[stop_point + 1:]
-        else:
-            break
-    if len(arr) > 0:
-        sentences.append(" ".join(arr))
+                for sentence in parag_splitted:
+                    if len(sentence) > 2:
+                        sentence_full = sentence + '.'
+                        sentences.append(sentence_full)
     return sentences
 
 
