@@ -1,6 +1,5 @@
 
 import WorksRetrival
-# import parser
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -69,7 +68,7 @@ def create_nearest_neighbors_model(X_train, y_train, author_name, num_neighbors)
 def create_decision_tree_model(X_train, y_train, author_name):
     decision_tree_model_path = ".\models\\" + author_name + "decision_tree_model.pkl"
     if not os.path.exists(decision_tree_model_path):
-        decision_tree_model = DecisionTreeClassifier(criterion="entropy")
+        decision_tree_model = DecisionTreeClassifier()
         decision_tree_model.fit(X_train, y_train)
         save_model(decision_tree_model, decision_tree_model_path)
     else:
@@ -92,15 +91,37 @@ def show_model_success(model, model_name, x_test, y_test, author_name):
     accuracy = accuracy_score(y_test, y_predicted)
     auc_score = roc_auc_score(y_test, y_predicted, average='weighted', labels=np.unique(y_predicted))
     f1_score_model = f1_score(y_test, y_predicted, average='weighted', labels=np.unique(y_predicted))
-    print(model_name, " accuracy: ",
-          accuracy," and roc: ", auc_score, " f1 score: ", f1_score_model, " of author ", author_name)
-    print(classification_report(y_test, y_predicted))
+    print(model_name, " Accuracy: ",
+          accuracy," and AUC: ", auc_score, " F1 score: ", f1_score_model, " of Author ", author_name)
+    # print(classification_report(y_test, y_predicted))
     return accuracy, auc_score, f1_score_model
 
+
+def plot_random_forest_results():
+    scores_random_forest_df = pd.read_csv("./scores.csv", encoding="utf-8-sig")
+
+    plt.plot('Num_Samples', 'Accuracy', 'bo', data=scores_random_forest_df)
+    plt.xlabel('Num Samples')
+    plt.ylabel('Accuracy')
+    plt.xlim(0, 400)
+    plt.show()
+
+    plt.plot('Num_Samples', 'AUC', 'ro', data=scores_random_forest_df)
+    plt.xlabel('Num Samples')
+    plt.ylabel('AUC Score')
+    plt.xlim(0, 400)
+    plt.show()
+
+    plt.plot('Num_Samples', 'F1', 'go', data=scores_random_forest_df)
+    plt.xlabel('Num Samples')
+    plt.ylabel('F1 Score')
+    plt.xlim(0, 400)
+    plt.show()
 
 
 
 if __name__ == '__main__':
+    # Get files from Ben Yehuda
     # i = START_FROM
     # for num in range(START_FROM, 27779):
     #     try:
@@ -111,12 +132,8 @@ if __name__ == '__main__':
     #
     # WorksRetrival.clean_directory("./authors")
 
-    # attempt = pd.read_csv("authors/דוד פרישמן/בחירות.csv")
-    # text = attempt["Text"][0]
-    # print("text is ", text)
-    parser = Embedder(2)
-
     # Train models for all authors
+    parser = Embedder(2)
     dirs = os.listdir("authors")
     num_of_authors = len(dirs)
 

@@ -241,11 +241,6 @@ def get_different_author_samples_of_size(author: str, size: int):
     while sample_count < size:
         random_file_path = random.choice(files)
         while author in random_file_path or random_file_path in files_chosen:
-            if author in random_file_path:
-                print("randomly selected filepath ", random_file_path,
-                      " It is a sample of the same author: ", author)
-            else:
-                print("File ", random_file_path, " was already selected")
             random_file_path = random.choice(files)
         files_chosen.add(random_file_path)
         text = pd.read_csv(random_file_path)["Text"][0]
